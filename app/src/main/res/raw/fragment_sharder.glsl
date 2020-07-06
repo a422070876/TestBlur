@@ -4,9 +4,8 @@ uniform highp float widthOfset;
 uniform highp float heightOfset;
 uniform highp float gaussianWeights[961];
 uniform highp int blurRadius;
-uniform highp int blurSigma;
 void main() {
-    if(blurSigma == 0 || blurRadius == 0){
+    if(blurRadius == 0){
         gl_FragColor = texture2D(sTexture,vTexCoord);
     }else{
         highp vec2 offset = vec2(widthOfset,heightOfset);

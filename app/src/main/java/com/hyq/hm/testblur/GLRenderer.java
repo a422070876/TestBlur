@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -25,7 +26,6 @@ public class GLRenderer {
     private int heightOfsetHandle;
     private int gaussianWeightsHandle;
     private int blurRadiusHandle;
-    private int blurSigmaHandle;
 
 
 
@@ -70,7 +70,6 @@ public class GLRenderer {
         heightOfsetHandle = GLES20.glGetUniformLocation(programId, "heightOfset");
         gaussianWeightsHandle = GLES20.glGetUniformLocation(programId, "gaussianWeights");
         blurRadiusHandle = GLES20.glGetUniformLocation(programId, "blurRadius");
-        blurSigmaHandle = GLES20.glGetUniformLocation(programId, "blurSigma");
 
         GLES20.glGenTextures(1, textures,0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
@@ -112,12 +111,16 @@ public class GLRenderer {
 
     private FloatBuffer gaussianWeightsBuffer;
     public void gaussianWeights(){
-        if(blurRadius == 0 || sigma == 0){
+        if(blurRadius == 0){
             return;
         }
+        long ttt = System.currentTimeMillis();
         float sumOfWeights = 0.0f;
         int g = 0;
         int tx = blurRadius*2+1;
+        if(sigma == 0){
+            sigma = 0.3f*((tx-1)*0.5f - 1f) + 0.8f;
+        }
         float gaussianWeights[] = new float[tx*tx];
         for (int x = -blurRadius; x <= blurRadius; x++) {
             for (int y = -blurRadius; y <= blurRadius; y++) {
@@ -136,14 +139,15 @@ public class GLRenderer {
                 .asFloatBuffer()
                 .put(gaussianWeights);
         gaussianWeightsBuffer.position(0);
+        Log.d("==================","time = "+(System.currentTimeMillis() - ttt));
     }
     private int blurRadius = 2;
     public void setBlurRadius(int blurRadius) {
         this.blurRadius = blurRadius;
     }
 
-    private int sigma = 3;
-    public void setSigma(int sigma) {
+    private double sigma = 3;
+    public void setSigma(double sigma) {
         this.sigma = sigma;
     }
 
@@ -164,7 +168,6 @@ public class GLRenderer {
         GLES20.glUniform1f(widthOfsetHandle, 1.0f/bitmapWidth);
         GLES20.glUniform1f(heightOfsetHandle, 1.0f/bitmapHeight);
         GLES20.glUniform1i(blurRadiusHandle, blurRadius);
-        GLES20.glUniform1i(blurSigmaHandle, sigma);
 
         int tx = blurRadius*2+1;
         GLES20.glUniform1fv(gaussianWeightsHandle,tx*tx,gaussianWeightsBuffer);
