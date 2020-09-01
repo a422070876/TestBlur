@@ -71,36 +71,29 @@ public class GLRenderer {
         gaussianWeightsHandle = GLES20.glGetUniformLocation(programId, "gaussianWeights");
         blurRadiusHandle = GLES20.glGetUniformLocation(programId, "blurRadius");
 
-        GLES20.glGenTextures(1, textures,0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
     }
     private  Rect rect = new Rect();
-    private int textures[] =  new int[1];
-    private int bitmapWidth,bitmapHeight;
-    public void setBitmap(Bitmap bitmap){
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D,0,bitmap,0);
-        bitmapWidth = bitmap.getWidth();
-        bitmapHeight = bitmap.getHeight();
+
+
+    private int scaleWidth,scaleHeight;
+    public void setScaleSize(int width,int height){
+        scaleWidth = width;
+        scaleHeight = height;
     }
 
     public void setScreenSize(int screenWidth,int screenHeight){
         float sh = screenWidth * 1.0f / screenHeight;
-        float vh = bitmapWidth * 1.0f / bitmapHeight;
+        float vh = scaleWidth * 1.0f / scaleHeight;
         int left, top, viewWidth, viewHeight;
         if (sh < vh) {
             left = 0;
             viewWidth = screenWidth;
-            viewHeight = (int) (bitmapHeight * 1.0f / bitmapWidth * viewWidth);
+            viewHeight = (int) (scaleHeight * 1.0f / scaleWidth * viewWidth);
             top = (screenHeight - viewHeight) / 2;
         } else {
             top = 0;
             viewHeight = screenHeight;
-            viewWidth = (int) (bitmapWidth * 1.0f / bitmapHeight * viewHeight);
+            viewWidth = (int) (scaleWidth * 1.0f / scaleHeight * viewHeight);
             left = (screenWidth - viewWidth) / 2;
         }
         rect.left = left;
@@ -151,12 +144,12 @@ public class GLRenderer {
         this.sigma = sigma;
     }
 
-    public void drawFrame(){
+    public void drawFrame(int texture){
         GLES20.glViewport(rect.left, rect.top, rect.width(), rect.height());
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glUseProgram(programId);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
         GLES20.glUniform1i(uTextureSamplerHandle, 0);
 
         GLES20.glEnableVertexAttribArray(aPositionHandle);
@@ -165,8 +158,8 @@ public class GLRenderer {
         GLES20.glEnableVertexAttribArray(aTextureCoordHandle);
         GLES20.glVertexAttribPointer(aTextureCoordHandle, 2, GLES20.GL_FLOAT, false, 8, textureVertexBuffer);
 
-        GLES20.glUniform1f(widthOfsetHandle, 1.0f/bitmapWidth);
-        GLES20.glUniform1f(heightOfsetHandle, 1.0f/bitmapHeight);
+        GLES20.glUniform1f(widthOfsetHandle, 1.0f/scaleWidth);
+        GLES20.glUniform1f(heightOfsetHandle, 1.0f/scaleHeight);
         GLES20.glUniform1i(blurRadiusHandle, blurRadius);
 
         int tx = blurRadius*2+1;

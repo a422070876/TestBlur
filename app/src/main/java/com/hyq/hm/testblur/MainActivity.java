@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private EGLUtils mEglUtils;
 
     private GLRenderer renderer;
+    private GLFrameBuffer frameBuffer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
         mEglUtils = new EGLUtils();
 
         renderer = new GLRenderer();
+        frameBuffer = new GLFrameBuffer();
+
 
         thread = new HandlerThread("testThread");
         thread.start();
@@ -51,11 +54,11 @@ public class MainActivity extends AppCompatActivity {
                         renderer.gaussianWeights();
                         break;
                     case 300:
-                        Bitmap bmp = Bitmap.createScaledBitmap((Bitmap) msg.obj,msg.arg1,msg.arg2,true);
-                        renderer.setBitmap(bmp);
+                        frameBuffer.drawFrame((Bitmap) msg.obj,msg.arg1,msg.arg2);
+                        renderer.setScaleSize(msg.arg1,msg.arg2);
                         break;
                 }
-                renderer.drawFrame();
+                renderer.drawFrame(frameBuffer.getTexture());
                 mEglUtils.swap();
             }
         };
@@ -75,11 +78,13 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         mEglUtils.initEGL(holder.getSurface());
+                        frameBuffer.initShader();
                         renderer.initShader(MainActivity.this);
-                        renderer.setBitmap(bitmap);
+                        frameBuffer.drawFrame(bitmap,bitmap.getWidth(),bitmap.getHeight());
+                        renderer.setScaleSize(bitmap.getWidth(),bitmap.getHeight());
                         renderer.setScreenSize(width,height);
                         renderer.gaussianWeights();
-                        renderer.drawFrame();
+                        renderer.drawFrame(frameBuffer.getTexture());
                         mEglUtils.swap();
                     }
                 });
