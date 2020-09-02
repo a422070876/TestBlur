@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case 300:
                         //先把bitmap渲染到fbo里,通过scaleWidth和scaleHeight来更改纹理的大小
-                        //fbo要先于renderer渲染
+                        //fbo要先于renderer渲染,fbo等于是预处理,fbo处理完的画面会进入fbo绑定的纹理内
                         frameBuffer.drawFrame((Bitmap) msg.obj,msg.arg1,msg.arg2);
                         //设置显示的大小,现在要显示的是处理过后的纹理,所以大小用处理过后的纹理大小
                         renderer.setScaleSize(msg.arg1,msg.arg2);
@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                         frameBuffer.initShader();
                         renderer.initShader(MainActivity.this);
                         //先把bitmap渲染到fbo里,通过scaleWidth和scaleHeight来更改纹理的大小
-                        //fbo要先于renderer渲染
+                        //fbo要先于renderer渲染,fbo等于是预处理,fbo处理完的画面会进入fbo绑定的纹理内
                         frameBuffer.drawFrame(bitmap,bitmap.getWidth(),bitmap.getHeight());
                         //设置显示的大小,现在要显示的是处理过后的纹理,所以大小用处理过后的纹理大小
                         renderer.setScaleSize(bitmap.getWidth(),bitmap.getHeight());
