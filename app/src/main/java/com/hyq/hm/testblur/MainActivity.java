@@ -54,11 +54,16 @@ public class MainActivity extends AppCompatActivity {
                         renderer.gaussianWeights();
                         break;
                     case 300:
+                        //先把bitmap渲染到fbo里,通过scaleWidth和scaleHeight来更改纹理的大小
+                        //fbo要先于renderer渲染
                         frameBuffer.drawFrame((Bitmap) msg.obj,msg.arg1,msg.arg2);
+                        //设置显示的大小,现在要显示的是处理过后的纹理,所以大小用处理过后的纹理大小
                         renderer.setScaleSize(msg.arg1,msg.arg2);
                         break;
                 }
+                //将fbo绑定的纹理转入给显示用的renderer内
                 renderer.drawFrame(frameBuffer.getTexture());
+                //渲染
                 mEglUtils.swap();
             }
         };
@@ -78,13 +83,19 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         mEglUtils.initEGL(holder.getSurface());
+                        //初始化fbo
                         frameBuffer.initShader();
                         renderer.initShader(MainActivity.this);
+                        //先把bitmap渲染到fbo里,通过scaleWidth和scaleHeight来更改纹理的大小
+                        //fbo要先于renderer渲染
                         frameBuffer.drawFrame(bitmap,bitmap.getWidth(),bitmap.getHeight());
+                        //设置显示的大小,现在要显示的是处理过后的纹理,所以大小用处理过后的纹理大小
                         renderer.setScaleSize(bitmap.getWidth(),bitmap.getHeight());
                         renderer.setScreenSize(width,height);
                         renderer.gaussianWeights();
+                        //将fbo绑定的纹理转入给显示用的renderer内
                         renderer.drawFrame(frameBuffer.getTexture());
+                        //渲染
                         mEglUtils.swap();
                     }
                 });
